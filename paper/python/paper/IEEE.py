@@ -41,7 +41,7 @@ def newRequest(cookies, keyword, page = 1):
     return req, data
 
 def getQuery(cookies, keyword, pageNum):
-    req, data = newRequest(cookies, 'recommendation', pageNum)
+    req, data = newRequest(cookies, keyword, pageNum)
     resp = urlopen(req, json.dumps(data).encode(encoding='utf_8'))
     resp_str =  str(resp.read(), encoding = 'utf-8')
     return json.loads(resp_str)
