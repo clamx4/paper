@@ -107,15 +107,21 @@ def download(record, folder_path, cookies):
     #cookies = getCookies()
     req.add_header('Cookie', '; '.join(cookies))
     
-    page = urlopen(req)
-    html = page.read()
+    print('downloading:', file_name)     
+    while True:
+        try:
+            page = urlopen(req, timeout=10)
+            html = page.read()
+            break
+        except Exception as err:
+            print(err)
+            print("maybe download too excessively, waiting for 10s")
+            time.sleep(10)
     
     file = open(''.join((folder_path, file_name)), mode='wb')
     file.write(html)
     file.close()
-    print('download:', file_name)     
 
-            
 
 
 if __name__ == '__main__':

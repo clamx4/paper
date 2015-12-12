@@ -17,7 +17,7 @@ def getHtml(keyword, page=1):
     
     while True:
         try:
-            page = urlopen(req)
+            page = urlopen(req, timeout=15)
             break
         except Exception as e:
             print(e)
@@ -44,7 +44,7 @@ def download(title, path, folder):
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36')
     while True:
         try:
-            page = urlopen(req, timeout=8)
+            page = urlopen(req, timeout=10)
             pdfbytes = page.read()
             break
         except Exception as e:

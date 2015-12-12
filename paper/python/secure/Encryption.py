@@ -64,7 +64,7 @@ class EncryptionAndDecryption:
         for cipher in ciphers:
             plain = dsa_decrypt(cipher)
             plains.append(plain)
-        datas = [None for i in range(0, len(ciphers))]
+        datas = [None] * len(ciphers)
         print('after decrypting')
         for plain in plains:
             digest = plain[0 : 64]
