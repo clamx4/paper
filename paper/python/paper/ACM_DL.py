@@ -10,8 +10,9 @@ from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 
 
-def getHtml(keyword, page=1):
-    url = 'http://dl.acm.org/results.cfm?query=' + keyword + '&start=' + str(20 * (page - 1)) + '&filtered=&within=owners%2Eowner%3DACM&dte=&bfr=&srt=_score'
+def getHtml(keyword, page_num):
+    keyword = keyword.replace(' ', '%20')
+    url = 'http://dl.acm.org/results.cfm?query=' + keyword + '&start=' + str(20 * (page_num - 1)) + '&filtered=&within=owners%2Eowner%3DACM&dte=&bfr=&srt=_score'
     req = Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36')
     
@@ -48,6 +49,7 @@ def download(title, path, folder):
             pdfbytes = page.read()
             break
         except Exception as e:
+            time.sleep(15)
             print(e)
     filename = getFileName(title)
     f = open(folder + filename, 'wb')
@@ -67,9 +69,14 @@ def getFileName(title):
     file_name = file_name.replace('|', '')
     return file_name
 
-def start(keyword, page_from, page_to, folder):
+def start(keyword, page_from, page_to, folder, delay):
     for page in range(page_from, page_to + 1):
-        html = getHtml(keyword, page)
+        while True:
+            try:
+                html = getHtml(keyword, page)
+                break
+            except Exception:
+                pass
         soup = BeautifulSoup(html, 'html.parser')
         divList = soup.find_all('div', {'class' : 'details'})
         title2path = {}
@@ -82,7 +89,7 @@ def start(keyword, page_from, page_to, folder):
         for title, path in title2path.items():
             print('downloading paper' , str(i), '/', str(papernum), 'in page', str(page), '/', str(page_to))
             download(title, path, folder)
-            time.sleep(10)
+            time.sleep(delay)
             i += 1
             
     

@@ -53,6 +53,13 @@ class GUI(tk.Frame):
         self.entry_path = tk.Entry(self)
         self.entry_path.pack()
         
+        self.label_download_interval = tk.Label(self)
+        self.label_download_interval['text'] = 'download interval(seconds):'
+        self.label_download_interval.pack()
+        
+        self.entry_download_interval = tk.Entry(self)
+        self.entry_download_interval.pack()
+        
         self.label_warning = tk.Label(self)
         self.label_warning['text'] = ''
         self.label_warning['fg'] = 'red'
@@ -62,16 +69,19 @@ class GUI(tk.Frame):
         self.button_start["text"] = "start"
         self.button_start["command"] = self.start
         self.button_start.pack(side="top")
+        
+        
 
-        self.QUIT = tk.Button(self, text="QUIT", fg="red",
-                              command=root.destroy)
-        self.QUIT.pack(side="bottom")
+#         self.QUIT = tk.Button(self, text="QUIT", fg="red",
+#                               command=root.destroy)
+#         self.QUIT.pack(side="bottom")
         
     def start(self):
         keyword = self.keyword.get()
         page_from = self.page_from.get()
         page_to = self.page_to.get()
         folder_path = self.entry_path.get()
+        interval = self.entry_download_interval.get()
         if not folder_path.endswith('/') and not folder_path.endswith('\\'):
             if folder_path.find('/') >= 0:
                 folder_path = ''.join((folder_path, '/'))
@@ -82,9 +92,10 @@ class GUI(tk.Frame):
         if self.check_empty_keyword(keyword) and \
             self.check_page_from(page_from) and \
             self.check_page_to(page_to) and \
-            self.check_path(folder_path):
+            self.check_path(folder_path) and \
+            self.check_interval(interval):
             self.warn('downloading')
-            self.download(keyword, int(page_from), int(page_to), folder_path)
+            self.download(keyword, int(page_from), int(page_to), folder_path, int(interval))
             self.warn('complete')
         
     def warn(self, warn_info):
@@ -124,17 +135,35 @@ class GUI(tk.Frame):
             return False
         return True
     
-    def download(self, keyword, page_from, page_to, folder_path):
+    def check_interval(self, str_interval):
+        try:
+            int_interval = int(str_interval)
+        except Exception:
+            self.warn('wrong delay interval')
+            return False
+        if int_interval < 1:
+            self.warn('delay interval cannot less than 1')
+            return False
+        return True
+    
+    def download(self, keyword, page_from, page_to, folder_path, delay):
         db = self.database.get()
         downloader = {'ieee' : spide_url,
                     'acm_dl' : start
                     }
-        downloader[db](keyword, page_from, page_to, folder_path)
+        downloader[db](keyword, page_from, page_to, folder_path, delay)
 
 if __name__ == '__main__':
+    DEBUG = 0
     root = tk.Tk()
     root.title('paper form IEEE/ACM_DL')
-    root.geometry('300x350')
+    root.geometry('300x365')
     gui = GUI(master = root)
+    if DEBUG:
+        gui.keyword.insert(0, 'smart home')
+        gui.page_from.insert(0, '4')
+        gui.page_to.insert(0, '5')
+        gui.entry_path.insert(0, 'd:\\p')
+        gui.entry_download_interval.insert(0, '5')
     gui.mainloop()
     

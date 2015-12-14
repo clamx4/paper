@@ -101,12 +101,19 @@ def exsit(filename):
         print('exsit')
     else:
         print('x')
+        
+def func(arg1, arg2, arg3):
+    print(arg1, arg2, arg3)
+    
+def proxy(foo):
+    def newfunc(*args):
+        return foo(1, *args)
+    return newfunc
+
+
     
 if __name__ == '__main__':
-    i = 1
-    print(i,2,3)
-    pass
-    
+    s = 'test t est'
     
 
 

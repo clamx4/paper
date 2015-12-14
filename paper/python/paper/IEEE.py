@@ -12,7 +12,13 @@ from urllib.request import Request
 from urllib.parse import urlencode
 
 def getCookies(url = 'http://ieeexplore.ieee.org'):
-    resp = urlopen(url)
+    while True:
+        try:
+            resp = urlopen(url, timeout=10)
+            break
+        except Exception as e:
+            print('exception when getting cookie:', e)
+            time.sleep(10)
     cookies = resp.headers.get_all('Set-Cookie')
     return cookies
         
@@ -40,10 +46,16 @@ def newRequest(cookies, keyword, page = 1):
     req.add_header("Cookie", '; '.join(cookies))
     return req, data
 
-def getQuery(cookies, keyword, pageNum):
+def getQuery(cookies, keyword, pageNum, delay):
     req, data = newRequest(cookies, keyword, pageNum)
-    resp = urlopen(req, json.dumps(data).encode(encoding='utf_8'))
-    resp_str =  str(resp.read(), encoding = 'utf-8')
+    while True:
+        try:
+            resp = urlopen(req, json.dumps(data).encode(encoding='utf_8'), timeout=10)
+            resp_str =  str(resp.read(), encoding = 'utf-8')
+            break
+        except Exception as e:
+            print('error when query:', e)
+            raise e
     return json.loads(resp_str)
 
 def do_record(record, keyword):
@@ -59,14 +71,25 @@ def record_in_mem(record, recordlist):
     recordlist.append(record)
     print(''.join(['record:', json.dumps(record)]))
 
-def spide_url(keyword, page_from, page_to, folder_path):
-    cookies = getCookies()
+def spide_url(keyword, page_from, page_to, folder_path, delay):
+    while True:
+        try:
+            cookies = getCookies()
+            break
+        except Exception:
+            pass
     host = 'http://ieeexplore.ieee.org'
     for pageNum in range(page_from, page_to + 1):
-        pageJson = getQuery(cookies, keyword, pageNum)
+        while True:
+            try:
+                pageJson = getQuery(cookies, keyword, pageNum, delay)
+                break
+            except Exception:
+                time.sleep(delay)
+                cookies = getCookies()
         i = 1
         for record in pageJson['records']:
-            print('getting', i, '/ 25 paper in ', pageNum, '/', page_to, 'page')
+            print('getting', i, '/', len(pageJson['records']), 'paper URL in ', pageNum, '/', page_to, 'page')
             preview = record['pdfLink']
             req = Request(host + preview)
             req.add_header('Cookie', '; '.join(cookies))
@@ -81,15 +104,19 @@ def spide_url(keyword, page_from, page_to, folder_path):
                     break
                 except Exception as err:
                     print(err)
-                    print("maybe download too excessively, waiting for 10s")
-                    time.sleep(10)
+#                     f = open('d:\\1.htm','w')
+#                     f.write(html)
+#                     f.close()
+                    print('maybe download too excessively, waiting for', delay, 's')
+                    time.sleep(delay)
                     cookies = getCookies()
                     
-            download(record, folder_path, cookies)
+            download(record, folder_path, cookies, delay)
+            time.sleep(delay)
             i += 1
             
             
-def download(record, folder_path, cookies):
+def download(record, folder_path, cookies, delay):
     url = record['pdfUrl']
     file_name = ''.join((record['title'], '.pdf'))
     file_name = file_name.replace('\\', '')
@@ -114,9 +141,12 @@ def download(record, folder_path, cookies):
             html = page.read()
             break
         except Exception as err:
-            print(err)
-            print("maybe download too excessively, waiting for 10s")
-            time.sleep(10)
+            print('error when downloading:', err)
+            print("maybe download too excessively, waiting for", delay, "s")
+            req = Request(url)
+            cookies = getCookies()
+            req.add_header('Cookie', '; '.join(cookies))
+            time.sleep(delay)
     
     file = open(''.join((folder_path, file_name)), mode='wb')
     file.write(html)
