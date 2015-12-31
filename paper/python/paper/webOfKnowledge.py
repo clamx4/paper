@@ -14,6 +14,7 @@ import urllib.parse
 from bs4 import BeautifulSoup
 from docx.api import Document
 import re
+from shutil import copyfile
 
 
 
@@ -270,8 +271,9 @@ def start(keyword, paper_from, paper_to, store_path='d:/论文摘要信息-wok.d
     global COOKIES
     getWhileTrue(getSID)
     queryHtml = getWhileTrue(getQueryHtml, keyword)
-        
-    doc = Document()
+    
+    copyfile('template.docx', store_path)    
+    doc = Document(store_path)
     doc.add_heading('关键词：' + keyword, 0)
     doc.save(store_path)
     for i in range(paper_from, paper_to + 1):
