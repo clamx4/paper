@@ -12,6 +12,7 @@ from urllib.request import urlopen, Request
 from http import cookies
 from docx import Document
 import re
+from shutil import copyfile
 
 
 def getHtml(keyword, page=1):
@@ -168,8 +169,7 @@ if __name__ == '__main__':
 #     doc = Document('d:/x.docx')
 #     doRecord(doc)
 #     doc.save('d:/x.docx')
-    s = '123\n3'
-    print(re.sub(r'2.*', '', s))
+    copyfile('../paper/template.docx', 'd:/x.docx')
     
 
 
