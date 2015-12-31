@@ -51,7 +51,7 @@ def getQuery(cookies, keyword, pageNum, delay):
     while True:
         try:
             resp = urlopen(req, json.dumps(data).encode(encoding='utf_8'), timeout=10)
-            resp_str =  str(resp.read(), encoding = 'utf-8')
+            resp_str = str(resp.read(), encoding = 'utf-8')
             break
         except Exception as e:
             print('error when query:', e)
