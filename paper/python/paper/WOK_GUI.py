@@ -3,7 +3,7 @@ Created on 2015年12月31日
 
 @author: cdz
 '''
-from paper.webOfKnowledge import *
+from paper.webOfKnowledge import start
 
 import tkinter as tk
 
