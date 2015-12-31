@@ -3,7 +3,7 @@ Created on 2015年12月31日
 
 @author: cdz
 '''
-from paper.webOfKnowledge import start
+from paper.webOfKnowledge import *
 
 import tkinter as tk
 
@@ -99,7 +99,7 @@ class GUI(tk.Frame):
                 start(keyword, int(paper_from), int(paper_to), store_path)
                 self.warn('完成')
             except Exception as e:
-                print('error when starting' + e)
+                print('error when starting', e)
                 self.warn('出错了')
         
     def warn(self, warn_info):
