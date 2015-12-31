@@ -50,7 +50,7 @@ class GUI(tk.Frame):
         
         self.entry_path = tk.Entry(self)
         self.entry_path.pack()
-        self.entry_path.insert(0, 'd:/论文摘要信息.docx')
+        self.entry_path.insert(0, 'd:\\论文摘要信息.docx')
         
 #         self.label_download_interval = tk.Label(self)
 #         self.label_download_interval['text'] = 'download interval(seconds):'
@@ -166,8 +166,8 @@ if __name__ == '__main__':
     gui = GUI(master = root)
     if DEBUG:
         gui.keyword.insert(0, 'smart home')
-        gui.paper_from.insert(0, '11')
-        gui.paper_to.insert(0, '23')
+        gui.paper_from.insert(0, '132')
+        gui.paper_to.insert(0, '132')
         #gui.entry_path.insert(0, 'd:\\p')
         #gui.entry_download_interval.insert(0, '5')
     gui.mainloop()

@@ -41,6 +41,15 @@ def getDetailPageHTML(url):
     conn.request('GET', url, None, headers)
     resp = conn.getresponse()
     headers = resp.headers
+    if resp.status == 302:
+        location = headers.get('Location')
+        for cookie in headers.get_all('Set-Cookie'):
+            COOKIES.load(cookie)
+        conn = HTTPConnection('apps.webofknowledge.com')
+        conn.request('GET', location, None, {'Cookie' : COOKIES.output(header='', sep=';')})
+        resp = conn.getresponse()
+        headers = resp.headers
+        
     for cookie in headers.get_all('Set-Cookie'):
         COOKIES.load(cookie)
     html = resp.read()
@@ -185,33 +194,68 @@ def getLinksFromQueryHTML(queryHtml):
 def doRecord(doc, detailHTML, num):
     bs = BeautifulSoup(detailHTML, 'html.parser')
     title = bs.find_all('div', {'class' : 'title'})
-    title_content = re.sub(r'<.*?>', '', str(title[0].contents[1]))
-    #print(title_content)
-    doc.add_heading(str(num) + '. ' + title_content, 1)
-    author = title[0].next_sibling
-    nosup = re.sub(r'<sup>.*?</sup>', '', str(author).replace('\n', ''))
-    author_content = re.sub(r'<.*?>', '', nosup)
-    author_content = re.sub(r'更多内容.*', '', author_content)
-    #print(author_content)
-    doc.add_paragraph(author_content)
-    info_fusion = author.next_sibling
-    info_fusion_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(info_fusion)))
-    info_fusion_content = info_fusion_content.replace('卷:\n', '卷:').replace('\n期:\n', '期:').replace('\n页:\n', '页:').replace('子辑:\n', '子辑:')
-    info_fusion_content = info_fusion_content.replace('DOI:\n', 'DOI:')
-    info_fusion_content = info_fusion_content.replace('出版年:\n', '出版年:')
-    info_fusion_content = info_fusion_content.replace('ISSN: \n', 'ISSN: ')
-    info_fusion_content = info_fusion_content.replace('eISSN: \n', 'eISSN: ')
-    info_fusion_content = info_fusion_content.replace('&amp;', '&')
-    #print(info_fusion_content)
-    doc.add_paragraph(info_fusion_content)
-    abstract = info_fusion.next_sibling
-    abstract_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(abstract)))
-    #print(abstract_content)
-    doc.add_paragraph(abstract_content)
-    keyword = abstract.next_sibling
-    keyword_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(keyword)))
-    #print(keyword_content)
-    doc.add_paragraph(keyword_content)
+    if len(title) == 1:
+        title_content = re.sub(r'<.*?>', '', str(title[0].contents[1]))
+        #print(title_content)
+        doc.add_heading(str(num) + '. ' + title_content, 1)
+        author = title[0].next_sibling
+        nosup = re.sub(r'<sup>.*?</sup>', '', str(author).replace('\n', ''))
+        author_content = re.sub(r'<.*?>', '', nosup)
+        author_content = re.sub(r'更多内容.*', '', author_content)
+        #print(author_content)
+        doc.add_paragraph(author_content)
+        info_fusion = author.next_sibling
+        info_fusion_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(info_fusion)))
+        info_fusion_content = info_fusion_content.replace('卷:\n', '卷:').replace('\n期:\n', '期:').replace('\n页:\n', '页:').replace('子辑:\n', '子辑:')
+        info_fusion_content = info_fusion_content.replace('DOI:\n', 'DOI:')
+        info_fusion_content = info_fusion_content.replace('出版年:\n', '出版年:')
+        info_fusion_content = info_fusion_content.replace('ISSN: \n', 'ISSN: ')
+        info_fusion_content = info_fusion_content.replace('eISSN: \n', 'eISSN: ')
+        info_fusion_content = info_fusion_content.replace('&amp;', '&')
+        #print(info_fusion_content)
+        doc.add_paragraph(info_fusion_content)
+        abstract = info_fusion.next_sibling
+        abstract_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(abstract)))
+        #print(abstract_content)
+        doc.add_paragraph(abstract_content)
+        keyword = abstract.next_sibling
+        keyword_content = re.sub(r'[\n]+', '\n', re.sub(r'<.*?>', '', str(keyword)))
+        #print(keyword_content)
+        doc.add_paragraph(keyword_content)
+    elif len(title) == 0:
+        #title = bs.find_all('table', {'id' : 'FullRecDataTable'})
+        #title = bs.find(id='FullRecDataTable')
+        title = bs.find_all('td', {'class' : 'FullRecTitle'})
+        title_content = re.sub(r'<.*?>', '', str(title[0]))
+        info_rows = bs.find_all('td', {'class' : 'fr_data_row'})
+        for info in info_rows:
+            info_content = ''.join([str for str in info.stripped_strings])
+            if 'Patent Number(s):' in info_content:
+                专利号 = info_content.replace('Patent Number(s):', '专利号:')
+            elif 'Inventor(s):' in info_content:
+                发明人 = info_content.replace('Inventor(s):', '发明人:')
+            elif 'Patent Assignee Name(s) and Code(s):' in info_content:
+                专利权人和代码 = info_content.replace('Patent Assignee Name(s) and Code(s):', '专利权人和代码:')
+            elif 'Derwent Primary Accession Number:' in info_content:
+                Derwent主入藏号 = info_content.replace('Derwent Primary Accession Number:', 'Derwent主入藏号:')
+            elif 'Abstract:' in info_content:
+                摘要 = info_content.replace('Abstract:', '摘要:\n')
+            elif 'International Patent Classification:' in info_content:
+                国际专利分类 = info_content.replace('International Patent Classification:', '国际专利分类:')
+            elif 'Derwent Class Code(s):' in info_content:
+                德温特分类代码 = info_content.replace('Derwent Class Code(s):', '德温特分类代码:')
+            elif 'Derwent Manual Code(s):' in info_content:
+                德温特手工代码 = info_content.replace('Derwent Manual Code(s):', '德温特手工代码:')
+        doc.add_heading(str(num) + '. ' + title_content, 1)
+        doc.add_paragraph(专利号)
+        doc.add_paragraph(发明人)
+        doc.add_paragraph(专利权人和代码)
+        doc.add_paragraph(Derwent主入藏号)
+        doc.add_paragraph(摘要)
+        doc.add_paragraph(国际专利分类)
+        doc.add_paragraph(德温特分类代码)
+        doc.add_paragraph(德温特手工代码)
+            
     
 COOKIES = cookies.SimpleCookie()
 def start(keyword, paper_from, paper_to, store_path='d:/论文摘要信息-wok.docx'):
