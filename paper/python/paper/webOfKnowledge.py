@@ -247,14 +247,22 @@ def doRecord(doc, detailHTML, num):
             elif 'Derwent Manual Code(s):' in info_content:
                 德温特手工代码 = info_content.replace('Derwent Manual Code(s):', '德温特手工代码:')
         doc.add_heading(str(num) + '. ' + title_content, 1)
-        doc.add_paragraph(专利号)
-        doc.add_paragraph(发明人)
-        doc.add_paragraph(专利权人和代码)
-        doc.add_paragraph(Derwent主入藏号)
-        doc.add_paragraph(摘要)
-        doc.add_paragraph(国际专利分类)
-        doc.add_paragraph(德温特分类代码)
-        doc.add_paragraph(德温特手工代码)
+        if 专利号:
+            doc.add_paragraph(专利号)
+        if 发明人:
+            doc.add_paragraph(发明人)
+        if 专利权人和代码:
+            doc.add_paragraph(专利权人和代码)
+        if Derwent主入藏号:
+            doc.add_paragraph(Derwent主入藏号)
+        if 摘要:
+            doc.add_paragraph(摘要)
+        if 国际专利分类:
+            doc.add_paragraph(国际专利分类)
+        if 德温特分类代码:
+            doc.add_paragraph(德温特分类代码)
+        if 德温特手工代码:
+            doc.add_paragraph(德温特手工代码)
             
     
 COOKIES = cookies.SimpleCookie()
